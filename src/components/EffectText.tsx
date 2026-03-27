@@ -86,7 +86,8 @@ export function EffectText({
 
         if (seg.type === "pause") {
           // Check skip every 100ms during pause
-          const end = Date.now() + seg.duration * 1000;
+          const cappedDuration = Math.min(seg.duration, 1.5);
+          const end = Date.now() + cappedDuration * 1000;
           while (Date.now() < end && !skipRef.current && !cancelled) {
             await sleep(100);
           }
@@ -104,7 +105,7 @@ export function EffectText({
               }
               return updated;
             });
-            await sleep(60);
+            await sleep(30);
           }
         } else {
           setVisibleSegments((prev) => [
@@ -168,11 +169,6 @@ export function EffectText({
           </span>
         );
       })}
-      {!done && (
-        <span className="text-zinc-700 text-[10px] ml-2 select-none">
-          (클릭: 건너뛰기)
-        </span>
-      )}
     </span>
   );
 }
