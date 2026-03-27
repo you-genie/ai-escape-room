@@ -542,6 +542,11 @@ export default function EscapeRoom() {
                 sendMessage(`${name} 쪽으로 다가가서 자세히 살펴본다`);
               }
             }}
+            onChangeRoom={(roomId) => {
+              if (!isLoading && !isEscaped) {
+                sendMessage(`${roomId} 방으로 이동한다`);
+              }
+            }}
             disabled={isLoading || isEscaped}
           />
         </div>

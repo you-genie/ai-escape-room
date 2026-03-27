@@ -44,6 +44,16 @@ export interface NPC {
   fourthWall: boolean;
 }
 
+export interface Room {
+  id: string;
+  name: string;
+  map: MapConfig;
+  objects: RoomObject[];
+  npcs?: NPC[];
+  locked?: boolean;
+  unlockHint?: string;
+}
+
 export interface Scenario {
   id: string;
   title: string;
@@ -57,6 +67,7 @@ export interface Scenario {
     time: string;
   };
   map: MapConfig;
+  rooms?: Room[];
   npcs?: NPC[];
   objects: RoomObject[];
   puzzles: Puzzle[];
@@ -114,7 +125,20 @@ ${scenario.npcs?.filter(n => scenario.map?.npcPositions?.[n.name]).map(n => `- $
 플레이어가 물건을 조사하러 갈 때 move_player로 해당 물건 좌표로 이동시켜라.
 "오른쪽으로 이동", "문 쪽으로 간다" 등 이동 요청에도 move_player를 호출하라.
 ` : ""}
-## 방 구조 (플레이어가 볼 수 있는 것들)
+${scenario.rooms ? `## 멀티룸 구조
+이 시나리오에는 여러 방이 있다. 플레이어는 방 사이를 이동할 수 있다.
+방을 해금하려면 unlock_room, 이동하려면 change_room 도구를 사용하라.
+${scenario.rooms.map((room) => `
+### [${room.id}] ${room.name} ${room.locked ? "(잠김)" : "(열림)"}
+${room.unlockHint ? `해금 조건: ${room.unlockHint}` : ""}
+맵: ${room.map.width}x${room.map.height}, 시작 (${room.map.playerStart.x},${room.map.playerStart.y})${room.map.exitPos ? `, 출구 (${room.map.exitPos.x},${room.map.exitPos.y})` : ""}
+물건: ${room.objects.map(o => `${o.name}${o.mapPos ? ` (${o.mapPos.x},${o.mapPos.y})` : ""}`).join(", ")}
+${room.npcs?.length ? `NPC: ${room.npcs.map(n => n.name).join(", ")}` : ""}
+`).join("")}
+방 이동 시 반드시 change_room을 호출하고, 해당 방의 물건만 묘사하라.
+잠긴 방에 들어가려 하면 잠겨있다고 알려주고, 해금 조건에 대한 힌트를 간접적으로 줘라.
+` : ""}
+## ${scenario.rooms ? "메인 방" : "방"} 구조 (플레이어가 볼 수 있는 것들)
 ${objectList}
 ${scenario.npcs?.length ? `
 ## NPC (방에 있는 존재들)

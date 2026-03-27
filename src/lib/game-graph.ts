@@ -175,7 +175,48 @@ const movePlayer = tool(
   }
 );
 
-const tools = [pickupItem, discoverClue, solvePuzzle, useItem, escapeRoom, giveHint, movePlayer];
+const changeRoom = tool(
+  async (input, config) => {
+    const state: GameState = config?.configurable?.gameState;
+    if (!state.unlockedRooms.includes(input.roomId)) {
+      return `"${input.roomId}" 방은 아직 잠겨있습니다.`;
+    }
+    state.currentRoom = input.roomId;
+    state.playerX = input.entryX ?? 3;
+    state.playerY = input.entryY ?? 2;
+    return `"${input.roomId}" 방으로 이동했습니다.`;
+  },
+  {
+    name: "change_room",
+    description: `플레이어가 다른 방으로 이동할 때 호출. 해금된 방만 이동 가능.
+    문을 통과하거나, 시간여행 등으로 다른 방으로 갈 때 사용.`,
+    schema: z.object({
+      roomId: z.string().describe("이동할 방의 ID"),
+      entryX: z.number().optional().describe("입장 X 좌표"),
+      entryY: z.number().optional().describe("입장 Y 좌표"),
+    }),
+  }
+);
+
+const unlockRoom = tool(
+  async (input, config) => {
+    const state: GameState = config?.configurable?.gameState;
+    if (state.unlockedRooms.includes(input.roomId)) {
+      return `"${input.roomId}" 방은 이미 해금되어 있습니다.`;
+    }
+    state.unlockedRooms.push(input.roomId);
+    return `"${input.roomId}" 방이 해금되었습니다!`;
+  },
+  {
+    name: "unlock_room",
+    description: "새로운 방이 해금될 때 호출. 퍼즐을 풀거나 열쇠를 사용해서 새 방에 접근 가능해질 때.",
+    schema: z.object({
+      roomId: z.string().describe("해금할 방의 ID"),
+    }),
+  }
+);
+
+const tools = [pickupItem, discoverClue, solvePuzzle, useItem, escapeRoom, giveHint, movePlayer, changeRoom, unlockRoom];
 
 // --- System Prompt (legacy, replaced by scenario config) ---
 const LEGACY_SYSTEM_PROMPT = `당신은 공포 텍스트 방탈출 게임의 게임 마스터입니다. 몰입감 있는 서사와 플레이어의 창의적인 행동을 존중하는 것이 핵심입니다.
@@ -352,8 +393,18 @@ export async function runGame(
   let session = sessions.get(sessionId);
   if (!session) {
     const startPos = scenario?.map?.playerStart ?? { x: 3, y: 2 };
+    const firstRoom = scenario?.rooms?.[0]?.id ?? "main";
+    const unlockedRooms = scenario?.rooms
+      ? scenario.rooms.filter((r) => !r.locked).map((r) => r.id)
+      : ["main"];
     session = {
-      gameState: { ...initialGameState, playerX: startPos.x, playerY: startPos.y },
+      gameState: {
+        ...initialGameState,
+        playerX: startPos.x,
+        playerY: startPos.y,
+        currentRoom: firstRoom,
+        unlockedRooms,
+      },
       messages: [],
     };
     sessions.set(sessionId, session);

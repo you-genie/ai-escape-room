@@ -3,6 +3,7 @@ import { cafeScenario } from "./cafe";
 import { kindergartenScenario } from "./kindergarten";
 import { hospitalScenario } from "./hospital";
 import { submarineScenario } from "./submarine";
+import { timetravelScenario } from "./timetravel";
 import type { Scenario } from "../scenario";
 
 export const scenarios: Scenario[] = [
@@ -11,6 +12,7 @@ export const scenarios: Scenario[] = [
   kindergartenScenario,
   hospitalScenario,
   submarineScenario,
+  timetravelScenario,
 ];
 
 export function getScenarioById(id: string): Scenario | undefined {
