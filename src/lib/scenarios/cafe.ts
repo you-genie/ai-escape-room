@@ -4,7 +4,7 @@ export const cafeScenario: Scenario = {
   id: "cafe",
   title: "사장님이 미쳤어요",
   subtitle: "카페 알바생의 퇴근 대작전",
-  ratings: { difficulty: 2, puzzleCount: 3, horror: 0 },
+  ratings: { difficulty: 2, puzzleCount: 2, horror: 0 },  // 퍼즐 4개, 쉬움
   map: {
     width: 7,
     height: 5,

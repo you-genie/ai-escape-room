@@ -4,7 +4,7 @@ export const tutorialScenario: Scenario = {
   id: "tutorial",
   title: "연습: 창고",
   subtitle: "간단한 방 하나. 탈출의 기본을 배워보자.",
-  ratings: { difficulty: 1, puzzleCount: 1, horror: 0 },
+  ratings: { difficulty: 1, puzzleCount: 1, horror: 0 },  // 퍼즐 3개, 초간단
   map: {
     width: 5,
     height: 4,

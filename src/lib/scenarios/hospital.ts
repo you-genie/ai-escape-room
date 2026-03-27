@@ -4,7 +4,7 @@ export const hospitalScenario: Scenario = {
   id: "hospital",
   title: "폐병원 수술실",
   subtitle: "1987년, 아무도 들어오지 않았던 그 곳",
-  ratings: { difficulty: 3, puzzleCount: 3, horror: 4 },
+  ratings: { difficulty: 2, puzzleCount: 2, horror: 4 },  // 퍼즐 5개, 보통
   titleDescription: [
     "1987년 폐업한 병원.",
     "아무도 들어오지 않았던 수술실에서",

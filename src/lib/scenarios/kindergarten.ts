@@ -4,7 +4,7 @@ export const kindergartenScenario: Scenario = {
   id: "kindergarten",
   title: "폐유치원",
   subtitle: "아이들은 다 어디로 간 걸까?",
-  ratings: { difficulty: 2, puzzleCount: 2, horror: 5 },
+  ratings: { difficulty: 1, puzzleCount: 1, horror: 5 },  // 퍼즐 3개, 쉬움 but 무서움
   titleDescription: [
     "도시 외곽의 버려진 유치원.",
     "취재를 위해 들어왔는데",
