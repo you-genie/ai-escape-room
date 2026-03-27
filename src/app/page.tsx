@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { type GameState, calculateEscapeResult, type EscapeResult } from "@/lib/game-state";
+import { EffectText } from "@/components/EffectText";
 import type { Scenario } from "@/lib/scenario";
 import { scenarios } from "@/lib/scenarios";
 
@@ -140,6 +141,32 @@ export default function EscapeRoom() {
   };
 
   const isEscaped = gameState?.escaped ?? false;
+
+  // Idle detection — if no input for 30s, NPC prompts the player
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const idleCountRef = useRef(0);
+
+  useEffect(() => {
+    if (!started || isLoading || isEscaped) return;
+
+    const resetIdle = () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => {
+        if (isLoading || isEscaped) return;
+        idleCountRef.current += 1;
+        if (idleCountRef.current <= 3) {
+          sendMessage(
+            "[시스템: 플레이어가 30초간 아무 행동도 하지 않았다. NPC가 있다면 NPC가 먼저 말을 걸거나 반응한다. NPC가 없다면 환경적 변화를 묘사한다. 이 메시지는 플레이어에게 보이지 않는다.]"
+          );
+        }
+      }, 30000);
+    };
+
+    resetIdle();
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [started, isLoading, isEscaped, messages.length, sendMessage]);
   const [escapeResult, setEscapeResult] = useState<EscapeResult | null>(null);
   const [showResult, setShowResult] = useState(false);
 
@@ -301,7 +328,9 @@ export default function EscapeRoom() {
           ref={scrollRef}
           className="flex-1 overflow-y-auto px-4 py-6 space-y-4"
         >
-          {messages.map((message) => (
+          {messages
+            .filter((m) => !(m.role === "user" && m.content.startsWith("[시스템:")))
+            .map((message) => (
             <div key={message.id} className="max-w-2xl mx-auto">
               {message.role === "user" ? (
                 <div className="flex items-start gap-2">
@@ -311,8 +340,8 @@ export default function EscapeRoom() {
                   <p className="text-green-600/80 text-sm">{message.content}</p>
                 </div>
               ) : (
-                <p className="text-sm leading-7 text-zinc-300 whitespace-pre-wrap">
-                  {message.content}
+                <p className="text-sm leading-7 text-zinc-300">
+                  <EffectText text={message.content} />
                 </p>
               )}
             </div>

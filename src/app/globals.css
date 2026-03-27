@@ -48,6 +48,41 @@ body {
   animation: pulse-red 3s ease-in-out infinite;
 }
 
+/* Text effect animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-2px) translateY(1px); }
+  20% { transform: translateX(2px) translateY(-1px); }
+  30% { transform: translateX(-1px); }
+  40% { transform: translateX(1px) translateY(1px); }
+  50% { transform: translateX(-2px); }
+  60% { transform: translateX(2px) translateY(-1px); }
+  70% { transform: translateX(-1px) translateY(1px); }
+  80% { transform: translateX(1px); }
+  90% { transform: translateX(-2px) translateY(-1px); }
+}
+
+@keyframes glitch {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  10% { transform: translateX(-3px) skewX(5deg); opacity: 0.8; color: #ff0040; }
+  20% { transform: translateX(3px) skewX(-3deg); opacity: 1; }
+  30% { transform: translateX(-2px); opacity: 0.6; color: #00ff9f; }
+  40% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(2px) skewX(2deg); opacity: 0.9; }
+  60% { transform: translateX(-3px); opacity: 0.7; color: #ff0040; }
+  70% { transform: translateX(0); opacity: 1; }
+  80% { transform: translateX(3px) skewX(-5deg); opacity: 0.8; }
+  90% { transform: translateX(-1px); opacity: 1; color: #00ff9f; }
+}
+
+.animate-shake {
+  animation: shake 0.4s infinite;
+}
+
+.animate-glitch {
+  animation: glitch 1s infinite;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 4px;
