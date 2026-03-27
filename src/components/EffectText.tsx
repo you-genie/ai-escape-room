@@ -8,7 +8,7 @@ function Markdown({ children }: { children: string }) {
   return (
     <ReactMarkdown
       components={{
-        p: ({ children }) => <span className="block mb-2 last:mb-0">{children}</span>,
+        p: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
         strong: ({ children }) => (
           <strong className="text-zinc-100 font-bold">{children}</strong>
         ),

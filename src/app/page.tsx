@@ -340,9 +340,9 @@ export default function EscapeRoom() {
                   <p className="text-green-600/80 text-sm">{message.content}</p>
                 </div>
               ) : (
-                <p className="text-sm leading-7 text-zinc-300">
+                <div className="text-sm leading-7 text-zinc-300">
                   <EffectText text={message.content} />
-                </p>
+                </div>
               )}
             </div>
           ))}
