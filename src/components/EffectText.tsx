@@ -1,7 +1,43 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
 import { parseTextEffects, type TextSegment } from "@/lib/text-effects";
+
+function Markdown({ children }: { children: string }) {
+  return (
+    <ReactMarkdown
+      components={{
+        p: ({ children }) => <span className="block mb-2 last:mb-0">{children}</span>,
+        strong: ({ children }) => (
+          <strong className="text-zinc-100 font-bold">{children}</strong>
+        ),
+        em: ({ children }) => (
+          <em className="text-zinc-400 italic">{children}</em>
+        ),
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-2 border-red-800/50 pl-3 my-2 text-zinc-500 italic">
+            {children}
+          </blockquote>
+        ),
+        ul: ({ children }) => (
+          <ul className="list-disc list-inside my-1 space-y-0.5">{children}</ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="list-decimal list-inside my-1 space-y-0.5">{children}</ol>
+        ),
+        hr: () => <hr className="border-zinc-800 my-3" />,
+        code: ({ children }) => (
+          <code className="text-red-400/80 bg-zinc-900 px-1 rounded text-xs">
+            {children}
+          </code>
+        ),
+      }}
+    >
+      {children}
+    </ReactMarkdown>
+  );
+}
 
 export function EffectText({
   text,
@@ -31,15 +67,12 @@ export function EffectText({
         if (seg.type === "pause") {
           await sleep(seg.duration * 1000);
         } else if (seg.type === "slow") {
-          // Type character by character
           for (let j = 0; j <= seg.content.length; j++) {
             if (cancelled) return;
             const partial = seg.content.slice(0, j);
             setVisibleSegments((prev) => {
               const updated = [...prev];
-              const existing = updated.findIndex(
-                (_, idx) => idx === i
-              );
+              const existing = updated.findIndex((_, idx) => idx === i);
               if (existing >= 0) {
                 updated[existing] = { segment: seg, displayText: partial };
               } else {
@@ -50,7 +83,6 @@ export function EffectText({
             await sleep(60);
           }
         } else {
-          // text, shake, glitch — show immediately
           setVisibleSegments((prev) => [
             ...prev,
             { segment: seg, displayText: seg.content },
@@ -70,29 +102,27 @@ export function EffectText({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // If no markers found, show text directly
+  // No markers — render as markdown directly
   const hasEffects = segments.some((s) => s.type !== "text");
   if (!hasEffects) {
-    return (
-      <span className="whitespace-pre-wrap">{text}</span>
-    );
+    return <Markdown>{text}</Markdown>;
   }
 
   return (
-    <span className={`whitespace-pre-wrap ${!done ? "effect-playing" : ""}`}>
+    <span className={!done ? "effect-playing" : ""}>
       {visibleSegments.map((item, i) => {
         const { segment, displayText } = item;
         if (segment.type === "shake") {
           return (
             <span key={i} className="inline-block animate-shake">
-              {displayText}
+              <Markdown>{displayText}</Markdown>
             </span>
           );
         }
         if (segment.type === "glitch") {
           return (
             <span key={i} className="inline-block animate-glitch">
-              {displayText}
+              <Markdown>{displayText}</Markdown>
             </span>
           );
         }
@@ -106,7 +136,11 @@ export function EffectText({
             </span>
           );
         }
-        return <span key={i}>{displayText}</span>;
+        return (
+          <span key={i}>
+            <Markdown>{displayText}</Markdown>
+          </span>
+        );
       })}
     </span>
   );
