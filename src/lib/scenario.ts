@@ -56,7 +56,7 @@ export interface Scenario {
     backstory: string;
     time: string;
   };
-  map?: MapConfig;
+  map: MapConfig;
   npcs?: NPC[];
   objects: RoomObject[];
   puzzles: Puzzle[];

@@ -5,6 +5,12 @@ export const tutorialScenario: Scenario = {
   title: "연습: 창고",
   subtitle: "간단한 방 하나. 탈출의 기본을 배워보자.",
   ratings: { difficulty: 1, puzzleCount: 1, horror: 0 },
+  map: {
+    width: 5,
+    height: 4,
+    playerStart: { x: 2, y: 2 },
+    exitPos: { x: 2, y: 3 },
+  },
   titleDescription: [
     "친구들과 방탈출 카페에 왔다.",
     "첫 번째 방은 연습용이래.",
@@ -20,17 +26,20 @@ export const tutorialScenario: Scenario = {
   objects: [
     {
       name: "스피커",
+      mapPos: { x: 2, y: 0 },
       description:
         "천장에 달린 작은 스피커. 가끔 안내 멘트가 나온다: '물건을 잘 살펴보세요! 뒤집어보거나, 안을 들여다보는 것도 좋은 방법이에요.'",
     },
     {
       name: "나무 상자",
+      mapPos: { x: 2, y: 1 },
       description:
         "방 가운데 놓인 나무 상자. 뚜껑이 닫혀있지만 잠겨있지 않다. 열면 안에 빨간 열쇠가 들어있다.",
       hiddenItems: ["빨간 열쇠"],
     },
     {
       name: "책상",
+      mapPos: { x: 4, y: 1 },
       description:
         "벽 쪽에 놓인 책상. 서랍이 하나 있고, 3자리 숫자 자물쇠가 걸려있다. 책상 위에 메모지가 있다: '오늘의 숫자: 7 + 7 + 7 = ?'",
       hiddenClues: ["메모지: 7+7+7=?"],
@@ -38,17 +47,20 @@ export const tutorialScenario: Scenario = {
     },
     {
       name: "출입문",
+      mapPos: { x: 2, y: 3 },
       description:
         "나가는 문. 빨간색과 파란색 열쇠 구멍이 하나씩 있다. 두 열쇠를 꽂으면 열린다.",
     },
     {
       name: "포스터",
+      mapPos: { x: 0, y: 0 },
       description:
         "벽에 붙은 포스터. '방탈출 팁: 1. 모든 것을 조사하세요 2. 숫자와 글자에 주목하세요 3. 아이템을 조합해보세요' 라고 적혀있다.",
       hiddenClues: ["방탈출 팁 포스터"],
     },
     {
       name: "쓰레기통",
+      mapPos: { x: 0, y: 3 },
       description:
         "구석에 있는 작은 쓰레기통. 안에 구겨진 종이가 있다. 펴보면 '서랍 비밀번호는 더하기 문제의 답!' 이라고 적혀있다.",
       hiddenClues: ["쓰레기통 종이: 서랍 비밀번호는 더하기 문제의 답"],
