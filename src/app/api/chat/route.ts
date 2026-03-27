@@ -8,6 +8,7 @@ export async function POST(req: Request) {
 
   try {
     const result = await runGame(sessionId, message, scenarioId);
+    console.log("[GAME RESPONSE]", JSON.stringify({ text: result.text.slice(0, 100), textLen: result.text.length, gameState: result.gameState }));
     return NextResponse.json(result);
   } catch (error) {
     console.error("Game error:", error);

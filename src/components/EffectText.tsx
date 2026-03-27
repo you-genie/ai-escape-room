@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { parseTextEffects, type TextSegment } from "@/lib/text-effects";
 
@@ -47,28 +47,52 @@ export function EffectText({
   onComplete?: () => void;
 }) {
   const segments = parseTextEffects(text);
+  const hasEffects = segments.some((s) => s.type !== "text");
+
   const [visibleSegments, setVisibleSegments] = useState<
     { segment: TextSegment; displayText: string }[]
   >([]);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState(!hasEffects);
   const processedRef = useRef(false);
+  const skipRef = useRef(false);
+
+  // Skip effect on click
+  const handleSkip = useCallback(() => {
+    if (done) return;
+    skipRef.current = true;
+    // Show all segments immediately
+    setVisibleSegments(
+      segments
+        .filter((s): s is Exclude<TextSegment, { type: "pause" }> => s.type !== "pause")
+        .map((s) => ({
+          segment: s,
+          displayText: s.content,
+        }))
+    );
+    setDone(true);
+    onComplete?.();
+  }, [done, segments, onComplete]);
 
   useEffect(() => {
-    if (processedRef.current) return;
+    if (!hasEffects || processedRef.current) return;
     processedRef.current = true;
 
     let cancelled = false;
 
     async function render() {
       for (let i = 0; i < segments.length; i++) {
-        if (cancelled) return;
+        if (cancelled || skipRef.current) return;
         const seg = segments[i];
 
         if (seg.type === "pause") {
-          await sleep(seg.duration * 1000);
+          // Check skip every 100ms during pause
+          const end = Date.now() + seg.duration * 1000;
+          while (Date.now() < end && !skipRef.current && !cancelled) {
+            await sleep(100);
+          }
         } else if (seg.type === "slow") {
           for (let j = 0; j <= seg.content.length; j++) {
-            if (cancelled) return;
+            if (cancelled || skipRef.current) return;
             const partial = seg.content.slice(0, j);
             setVisibleSegments((prev) => {
               const updated = [...prev];
@@ -90,26 +114,28 @@ export function EffectText({
         }
       }
 
-      setDone(true);
-      onComplete?.();
+      if (!skipRef.current) {
+        setDone(true);
+        onComplete?.();
+      }
     }
 
     render();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // No markers — render as markdown directly
-  const hasEffects = segments.some((s) => s.type !== "text");
   if (!hasEffects) {
     return <Markdown>{text}</Markdown>;
   }
 
   return (
-    <span className={!done ? "effect-playing" : ""}>
+    <span
+      className={!done ? "cursor-pointer" : ""}
+      onClick={handleSkip}
+      title={!done ? "클릭하여 건너뛰기" : undefined}
+    >
       {visibleSegments.map((item, i) => {
         const { segment, displayText } = item;
         if (segment.type === "shake") {
@@ -142,6 +168,11 @@ export function EffectText({
           </span>
         );
       })}
+      {!done && (
+        <span className="text-zinc-700 text-[10px] ml-2 select-none">
+          (클릭: 건너뛰기)
+        </span>
+      )}
     </span>
   );
 }
