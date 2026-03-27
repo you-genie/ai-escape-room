@@ -1,8 +1,23 @@
+export interface MapPosition {
+  x: number; // 0~6 grid column
+  y: number; // 0~4 grid row
+}
+
 export interface RoomObject {
   name: string;
   description: string;
   hiddenItems?: string[];
   hiddenClues?: string[];
+  mapPos?: MapPosition;
+}
+
+export interface MapConfig {
+  width: number;  // grid columns
+  height: number; // grid rows
+  walls?: string; // ASCII art background (optional)
+  playerStart: MapPosition;
+  exitPos?: MapPosition;
+  npcPositions?: Record<string, MapPosition>;
 }
 
 export interface Puzzle {
@@ -41,6 +56,7 @@ export interface Scenario {
     backstory: string;
     time: string;
   };
+  map?: MapConfig;
   npcs?: NPC[];
   objects: RoomObject[];
   puzzles: Puzzle[];
@@ -89,6 +105,15 @@ export function scenarioToSystemPrompt(scenario: Scenario): string {
 시간: ${scenario.setting.time}
 배경: ${scenario.setting.backstory}
 
+${scenario.map ? `## 방 좌표 맵 (x=0왼쪽~${scenario.map.width - 1}오른쪽, y=0앞~${scenario.map.height - 1}뒤)
+플레이어 시작 위치: (${scenario.map.playerStart.x}, ${scenario.map.playerStart.y})
+출구 위치: ${scenario.map.exitPos ? `(${scenario.map.exitPos.x}, ${scenario.map.exitPos.y})` : "없음"}
+${scenario.objects.filter(o => o.mapPos).map(o => `- ${o.name}: (${o.mapPos!.x}, ${o.mapPos!.y})`).join("\n")}
+${scenario.npcs?.filter(n => scenario.map?.npcPositions?.[n.name]).map(n => `- ${n.name} (NPC): (${scenario.map!.npcPositions![n.name].x}, ${scenario.map!.npcPositions![n.name].y})`).join("\n") ?? ""}
+
+플레이어가 물건을 조사하러 갈 때 move_player로 해당 물건 좌표로 이동시켜라.
+"오른쪽으로 이동", "문 쪽으로 간다" 등 이동 요청에도 move_player를 호출하라.
+` : ""}
 ## 방 구조 (플레이어가 볼 수 있는 것들)
 ${objectList}
 ${scenario.npcs?.length ? `

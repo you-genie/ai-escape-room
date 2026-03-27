@@ -325,18 +325,6 @@ export default function EscapeRoom() {
           </div>
         </header>
 
-        {/* Room Map */}
-        <RoomMap
-          scenario={selectedScenario}
-          gameState={gameState}
-          onExamine={(name) => {
-            if (!isLoading && !isEscaped) {
-              sendMessage(`${name}을(를) 조사한다`);
-            }
-          }}
-          disabled={isLoading || isEscaped}
-        />
-
         <div
           ref={scrollRef}
           className="flex-1 overflow-y-auto px-4 py-6 space-y-5"
@@ -543,6 +531,20 @@ export default function EscapeRoom() {
             </form>
           </div>
         )}
+
+        {/* Mini Map */}
+        <div className="border-t border-zinc-800/50 flex-1 min-h-[180px]">
+          <RoomMap
+            scenario={selectedScenario}
+            gameState={gameState}
+            onExamine={(name) => {
+              if (!isLoading && !isEscaped) {
+                sendMessage(`${name}을(를) 조사한다`);
+              }
+            }}
+            disabled={isLoading || isEscaped}
+          />
+        </div>
       </aside>
     </div>
   );

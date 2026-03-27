@@ -10,6 +10,8 @@ export interface GameState {
   escapeDescription: string | null;
   actionCount: number;
   hintCount: number;
+  playerX: number;
+  playerY: number;
 }
 
 export const initialGameState: GameState = {
@@ -22,6 +24,8 @@ export const initialGameState: GameState = {
   escapeDescription: null,
   actionCount: 0,
   hintCount: 0,
+  playerX: 3,
+  playerY: 2,
 };
 
 export interface EscapeResult {
@@ -156,6 +160,7 @@ export function gameStateToPrompt(state: GameState): string {
 - 해결한 퍼즐: [${puzzles}]
 - 행동 횟수: ${state.actionCount}
 - 힌트 사용: ${state.hintCount}회
+- 플레이어 위치: (${state.playerX}, ${state.playerY})
 - 탈출 여부: ${state.escaped ? "탈출 성공" : "아직 갇혀있음"}
 `;
 }

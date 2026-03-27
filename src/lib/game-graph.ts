@@ -156,7 +156,26 @@ const giveHint = tool(
   }
 );
 
-const tools = [pickupItem, discoverClue, solvePuzzle, useItem, escapeRoom, giveHint];
+const movePlayer = tool(
+  async (input, config) => {
+    const state: GameState = config?.configurable?.gameState;
+    state.playerX = input.x;
+    state.playerY = input.y;
+    return `플레이어가 (${input.x}, ${input.y})로 이동했습니다.`;
+  },
+  {
+    name: "move_player",
+    description: `플레이어가 방 안에서 이동할 때 호출. 물건 조사 시 해당 물건 위치로 자동 이동.
+    "오른쪽으로 이동", "문 쪽으로 간다", "세면대로 다가간다" 등에 반응.
+    맵 좌표계: x=0(왼쪽)~6(오른쪽), y=0(위/앞)~4(아래/뒤). 물건의 mapPos 좌표를 참고.`,
+    schema: z.object({
+      x: z.number().describe("이동할 x 좌표 (0~6)"),
+      y: z.number().describe("이동할 y 좌표 (0~4)"),
+    }),
+  }
+);
+
+const tools = [pickupItem, discoverClue, solvePuzzle, useItem, escapeRoom, giveHint, movePlayer];
 
 // --- System Prompt (legacy, replaced by scenario config) ---
 const LEGACY_SYSTEM_PROMPT = `당신은 공포 텍스트 방탈출 게임의 게임 마스터입니다. 몰입감 있는 서사와 플레이어의 창의적인 행동을 존중하는 것이 핵심입니다.
@@ -332,8 +351,9 @@ export async function runGame(
   // Get or create session
   let session = sessions.get(sessionId);
   if (!session) {
+    const startPos = scenario?.map?.playerStart ?? { x: 3, y: 2 };
     session = {
-      gameState: { ...initialGameState },
+      gameState: { ...initialGameState, playerX: startPos.x, playerY: startPos.y },
       messages: [],
     };
     sessions.set(sessionId, session);
