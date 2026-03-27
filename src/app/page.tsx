@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { type GameState, calculateEscapeResult, type EscapeResult } from "@/lib/game-state";
 import { EffectText } from "@/components/EffectText";
+import { RoomMap } from "@/components/RoomMap";
 import type { Scenario } from "@/lib/scenario";
 import { scenarios } from "@/lib/scenarios";
 
@@ -324,23 +325,35 @@ export default function EscapeRoom() {
           </div>
         </header>
 
+        {/* Room Map */}
+        <RoomMap
+          scenario={selectedScenario}
+          gameState={gameState}
+          onExamine={(name) => {
+            if (!isLoading && !isEscaped) {
+              sendMessage(`${name}을(를) 조사한다`);
+            }
+          }}
+          disabled={isLoading || isEscaped}
+        />
+
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto px-4 py-6 space-y-4"
+          className="flex-1 overflow-y-auto px-4 py-6 space-y-5"
         >
           {messages
             .filter((m) => !(m.role === "user" && m.content.startsWith("[시스템:")))
             .map((message) => (
             <div key={message.id} className="max-w-2xl mx-auto">
               {message.role === "user" ? (
-                <div className="flex items-start gap-2">
-                  <span className="text-green-600/80 text-sm shrink-0 mt-0.5">
+                <div className="flex items-start gap-2 py-1">
+                  <span className="text-green-600/60 text-xs shrink-0 mt-0.5 font-bold">
                     {">"}
                   </span>
-                  <p className="text-green-600/80 text-sm">{message.content}</p>
+                  <p className="text-green-600/70 text-xs">{message.content}</p>
                 </div>
               ) : (
-                <div className="text-sm leading-7 text-zinc-300">
+                <div className="text-[13px] leading-7 text-zinc-300 border-l-2 border-zinc-800/40 pl-3 py-1">
                   <EffectText text={message.content} />
                 </div>
               )}
