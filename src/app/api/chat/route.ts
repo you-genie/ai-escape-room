@@ -4,10 +4,10 @@ import { runGame } from "@/lib/game-graph";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  const { sessionId, message } = await req.json();
+  const { sessionId, message, scenarioId } = await req.json();
 
   try {
-    const result = await runGame(sessionId, message);
+    const result = await runGame(sessionId, message, scenarioId);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Game error:", error);

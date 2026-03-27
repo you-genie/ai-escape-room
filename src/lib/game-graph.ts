@@ -11,6 +11,8 @@ import { z } from "zod";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { type GameState, initialGameState, gameStateToPrompt } from "./game-state";
 import { CallbackHandler as LangfuseHandler } from "langfuse-langchain";
+import { type Scenario, scenarioToSystemPrompt } from "./scenario";
+import { getScenarioById } from "./scenarios";
 
 // --- Game State Annotation ---
 const GameAnnotation = Annotation.Root({
@@ -61,17 +63,25 @@ const discoverClue = tool(
 const solvePuzzle = tool(
   async (input, config) => {
     const state: GameState = config?.configurable?.gameState;
+    const label = `${input.puzzle} [${input.method}]`;
     if (state.puzzlesSolved.includes(input.puzzle)) {
       return `이미 "${input.puzzle}"을(를) 해결했습니다.`;
     }
-    state.puzzlesSolved.push(input.puzzle);
-    return `퍼즐 "${input.puzzle}"을(를) 해결했습니다!`;
+    state.puzzlesSolved.push(label);
+    return `퍼즐 "${input.puzzle}"을(를) ${input.method} 방식으로 해결했습니다!`;
   },
   {
     name: "solve_puzzle",
-    description: "퍼즐을 해결했을 때 호출. 비밀번호 입력, 자물쇠 열기 등",
+    description: `퍼즐을 해결했을 때 호출.
+    method 종류:
+    - "normal": 의도된 방법으로 해결 (단서를 찾아서 비밀번호 입력, 열쇠로 자물쇠 열기)
+    - "creative": 의도하지 않았지만 합리적인 방법 (다른 도구로 따기, 우회 경로)
+    - "brute": 무력으로 해결 (유리 깨기, 자물쇠 부수기, 문 때리기)`,
     schema: z.object({
       puzzle: z.string().describe("해결한 퍼즐 이름"),
+      method: z
+        .enum(["normal", "creative", "brute"])
+        .describe("퍼즐 해결 방식"),
     }),
   }
 );
@@ -100,22 +110,37 @@ const useItem = tool(
 );
 
 const escapeRoom = tool(
-  async (_input, config) => {
+  async (input, config) => {
     const state: GameState = config?.configurable?.gameState;
     state.escaped = true;
-    return "탈출에 성공했습니다!";
+    state.escapeMethod = input.method;
+    state.escapeDescription = input.description;
+    return `탈출 방식: ${input.method} - ${input.description}`;
   },
   {
     name: "escape_room",
-    description: "플레이어가 방에서 탈출에 성공했을 때만 호출. 두 열쇠로 문을 열었을 때",
-    schema: z.object({}),
+    description: `플레이어가 방에서 탈출하거나 게임이 종료될 때 호출.
+    method 종류:
+    - "normal": 퍼즐을 정상적으로 풀어서 탈출
+    - "creative": 예상 밖의 창의적인 방법으로 탈출 (의도된 풀이가 아니지만 합리적)
+    - "brute": 무력으로 탈출 (문을 부수기, 자물쇠 때려부수기 등)
+    - "bizarre": 정말 이상한 방법 (말도 안 되는 방법인데 재미있어서 인정)
+    - "death": 사망으로 인한 탈출 (숨 안 쉬기, 자해 등)`,
+    schema: z.object({
+      method: z
+        .enum(["normal", "creative", "brute", "bizarre", "death"])
+        .describe("탈출 방식 분류"),
+      description: z
+        .string()
+        .describe("탈출 방식에 대한 짧은 설명 (예: '두 열쇠로 문을 열고 탈출')"),
+    }),
   }
 );
 
 const tools = [pickupItem, discoverClue, solvePuzzle, useItem, escapeRoom];
 
-// --- System Prompt ---
-const SYSTEM_PROMPT = `당신은 공포 텍스트 방탈출 게임의 게임 마스터입니다. 몰입감 있는 서사와 플레이어의 창의적인 행동을 존중하는 것이 핵심입니다.
+// --- System Prompt (legacy, replaced by scenario config) ---
+const LEGACY_SYSTEM_PROMPT = `당신은 공포 텍스트 방탈출 게임의 게임 마스터입니다. 몰입감 있는 서사와 플레이어의 창의적인 행동을 존중하는 것이 핵심입니다.
 
 ## 설정
 장소: 버려진 폐병원의 수술실. 1987년에 폐업한 후 아무도 들어오지 않았던 곳.
@@ -185,11 +210,15 @@ const SYSTEM_PROMPT = `당신은 공포 텍스트 방탈출 게임의 게임 마
 5. 같은 물건을 반복 조사하면 처음과 다른 디테일을 추가하거나, 이전과 달라진 점을 묘사.`;
 
 // --- Graph ---
-function createGameGraph() {
+function createGameGraph(scenario?: Scenario) {
   const model = new ChatGoogleGenerativeAI({
     model: "gemini-2.5-flash",
     temperature: 0.8,
   }).bindTools(tools);
+
+  const systemPrompt = scenario
+    ? scenarioToSystemPrompt(scenario)
+    : LEGACY_SYSTEM_PROMPT;
 
   const toolNode = new ToolNode(tools);
 
@@ -198,7 +227,7 @@ function createGameGraph() {
     state: typeof GameAnnotation.State
   ): Promise<Partial<typeof GameAnnotation.State>> {
     const gamePrompt = gameStateToPrompt(state.gameState);
-    const systemMsg = new SystemMessage(SYSTEM_PROMPT + "\n" + gamePrompt);
+    const systemMsg = new SystemMessage(systemPrompt + "\n" + gamePrompt);
     const response = await model.invoke([systemMsg, ...state.messages]);
     return { messages: [response] };
   }
@@ -275,9 +304,11 @@ const sessions = new Map<
 
 export async function runGame(
   sessionId: string,
-  userInput: string
+  userInput: string,
+  scenarioId?: string
 ): Promise<{ text: string; gameState: GameState }> {
-  const graph = createGameGraph();
+  const scenario = scenarioId ? getScenarioById(scenarioId) : undefined;
+  const graph = createGameGraph(scenario);
 
   // Get or create session
   let session = sessions.get(sessionId);
