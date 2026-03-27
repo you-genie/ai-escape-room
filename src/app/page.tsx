@@ -539,7 +539,7 @@ export default function EscapeRoom() {
             gameState={gameState}
             onExamine={(name) => {
               if (!isLoading && !isEscaped) {
-                sendMessage(`${name}을(를) 조사한다`);
+                sendMessage(`${name} 쪽으로 다가가서 자세히 살펴본다`);
               }
             }}
             disabled={isLoading || isEscaped}
