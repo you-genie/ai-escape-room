@@ -4,7 +4,7 @@ export const timetravelScenario: Scenario = {
   id: "timetravel",
   title: "크로노스 연구소",
   subtitle: "시간을 되돌려야 탈출할 수 있다",
-  ratings: { difficulty: 3, puzzleCount: 4, horror: 1 },
+  ratings: { difficulty: 1, puzzleCount: 2, horror: 1 },  // 코드가 여기저기 노출, 실질 퍼즐 단순
   map: {
     width: 7,
     height: 5,
