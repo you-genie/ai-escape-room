@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #c4c4c4;
 }
 
 @theme inline {
@@ -12,15 +12,50 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Flickering effect for horror atmosphere */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  41% { opacity: 1; }
+  42% { opacity: 0.6; }
+  43% { opacity: 1; }
+  44% { opacity: 0.2; }
+  45% { opacity: 1; }
+  90% { opacity: 1; }
+  91% { opacity: 0.5; }
+  92% { opacity: 1; }
+}
+
+@keyframes pulse-red {
+  0%, 100% { text-shadow: 0 0 4px rgba(220, 38, 38, 0.4); }
+  50% { text-shadow: 0 0 12px rgba(220, 38, 38, 0.8), 0 0 24px rgba(220, 38, 38, 0.3); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.flicker {
+  animation: flicker 4s infinite;
+}
+
+.pulse-red {
+  animation: pulse-red 3s ease-in-out infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 2px;
 }
