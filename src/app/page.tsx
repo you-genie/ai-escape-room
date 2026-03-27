@@ -223,6 +223,13 @@ export default function EscapeRoom() {
                 <span>단서 발견</span>
                 <span className="text-zinc-300">{gameState?.discoveries.length ?? 0}개</span>
               </div>
+              <div className="flex justify-between">
+                <span>힌트 사용</span>
+                <span className={`${(gameState?.hintCount ?? 0) <= 3 ? "text-green-400" : "text-red-400"}`}>
+                  {gameState?.hintCount ?? 0}회
+                  {(gameState?.hintCount ?? 0) <= 3 ? "" : " (감점)"}
+                </span>
+              </div>
             </div>
             <div className="flex gap-3 justify-center pt-4">
               <button
@@ -407,6 +414,46 @@ export default function EscapeRoom() {
           )}
         </div>
 
+        {/* Hint + Progress */}
+        <div className="p-3 border-b border-zinc-800/50 space-y-2">
+          <button
+            onClick={() => {
+              if (!isLoading && !isEscaped) sendMessage("힌트를 줘");
+            }}
+            disabled={isLoading || isEscaped}
+            className="w-full text-xs py-1.5 border border-zinc-800 text-zinc-500 hover:text-amber-500/80 hover:border-amber-900/50 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            힌트 요청
+            {gameState && gameState.hintCount > 0 && (
+              <span
+                className={`ml-1 ${
+                  gameState.hintCount <= 3
+                    ? "text-green-600/60"
+                    : "text-red-500/60"
+                }`}
+              >
+                ({gameState.hintCount}/3)
+              </span>
+            )}
+          </button>
+          <div className="text-[10px] text-zinc-700 space-y-0.5">
+            <div className="flex justify-between">
+              <span>진행도</span>
+              <span className="text-zinc-500">
+                {gameState
+                  ? `${gameState.puzzlesSolved.length}개 퍼즐 / ${gameState.discoveries.length}개 단서`
+                  : "-"}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>행동</span>
+              <span className="text-zinc-500">
+                {gameState?.actionCount ?? 0}회
+              </span>
+            </div>
+          </div>
+        </div>
+
         {showNotes && (
           <div className="p-3 flex-1 flex flex-col min-h-0">
             <h3 className="text-[10px] tracking-widest text-zinc-600 uppercase mb-2">
@@ -509,9 +556,28 @@ function ScenarioSelect({
                     <span className="text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-600 uppercase">
                       {scenario.atmosphere}
                     </span>
-                    <span className="text-[10px] text-zinc-700">
-                      {"\u2605".repeat(scenario.difficulty)}
-                      {"\u2606".repeat(5 - scenario.difficulty)}
+                  </div>
+                  <div className="flex gap-3 mt-1 text-[10px] text-zinc-700">
+                    <span>
+                      난이도{" "}
+                      <span className="text-zinc-500">
+                        {"\u25A0".repeat(scenario.ratings.difficulty)}
+                        {"\u25A1".repeat(5 - scenario.ratings.difficulty)}
+                      </span>
+                    </span>
+                    <span>
+                      문제{" "}
+                      <span className="text-zinc-500">
+                        {"\u25A0".repeat(scenario.ratings.puzzleCount)}
+                        {"\u25A1".repeat(5 - scenario.ratings.puzzleCount)}
+                      </span>
+                    </span>
+                    <span>
+                      공포{" "}
+                      <span className={scenario.ratings.horror >= 4 ? "text-red-600/60" : "text-zinc-500"}>
+                        {"\u25A0".repeat(scenario.ratings.horror)}
+                        {"\u25A1".repeat(5 - scenario.ratings.horror)}
+                      </span>
                     </span>
                   </div>
                   <p className="text-xs text-zinc-600 group-hover:text-zinc-500 transition-colors">

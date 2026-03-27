@@ -4,7 +4,7 @@ export const tutorialScenario: Scenario = {
   id: "tutorial",
   title: "연습: 창고",
   subtitle: "간단한 방 하나. 탈출의 기본을 배워보자.",
-  difficulty: 1,
+  ratings: { difficulty: 1, puzzleCount: 1, horror: 0 },
   titleDescription: [
     "친구들과 방탈출 카페에 왔다.",
     "첫 번째 방은 연습용이래.",

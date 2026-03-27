@@ -137,7 +137,26 @@ const escapeRoom = tool(
   }
 );
 
-const tools = [pickupItem, discoverClue, solvePuzzle, useItem, escapeRoom];
+const giveHint = tool(
+  async (input, config) => {
+    const state: GameState = config?.configurable?.gameState;
+    state.hintCount += 1;
+    return `힌트 제공 (${state.hintCount}회째): ${input.hint}`;
+  },
+  {
+    name: "give_hint",
+    description: `플레이어가 힌트를 요청했을 때 호출. "힌트", "도와줘", "모르겠어", "막혔어" 같은 요청에 반응.
+    현재 게임 상태를 분석해서 다음에 할 수 있는 행동을 간접적으로 알려준다.
+    너무 직접적으로 정답을 말하지 말고, 방향을 제시하라.
+    예: "수술대 주변을 좀 더 자세히 살펴보는 건 어떨까요?" (O)
+    예: "수술대 아래에 1987이 적혀있습니다" (X - 너무 직접적)`,
+    schema: z.object({
+      hint: z.string().describe("간접적인 힌트 내용"),
+    }),
+  }
+);
+
+const tools = [pickupItem, discoverClue, solvePuzzle, useItem, escapeRoom, giveHint];
 
 // --- System Prompt (legacy, replaced by scenario config) ---
 const LEGACY_SYSTEM_PROMPT = `당신은 공포 텍스트 방탈출 게임의 게임 마스터입니다. 몰입감 있는 서사와 플레이어의 창의적인 행동을 존중하는 것이 핵심입니다.
@@ -339,15 +358,32 @@ export async function runGame(
     { callbacks: [langfuseHandler] }
   );
 
-  // Extract AI response
-  const aiMessages = result.messages.filter(
-    (m: BaseMessage) => m._getType() === "ai" && m.content
-  );
+  // Extract AI response — find the last AI message with actual text content
+  const aiMessages = result.messages.filter((m: BaseMessage) => {
+    if (m._getType() !== "ai") return false;
+    if (typeof m.content === "string") return m.content.length > 0;
+    if (Array.isArray(m.content)) {
+      return m.content.some(
+        (part: Record<string, unknown>) => part.type === "text" && part.text
+      );
+    }
+    return false;
+  });
   const lastAI = aiMessages[aiMessages.length - 1];
-  const text =
-    typeof lastAI.content === "string"
-      ? lastAI.content
-      : JSON.stringify(lastAI.content);
+  let text = "";
+  if (lastAI) {
+    if (typeof lastAI.content === "string") {
+      text = lastAI.content;
+    } else if (Array.isArray(lastAI.content)) {
+      text = lastAI.content
+        .filter((part: Record<string, unknown>) => part.type === "text")
+        .map((part: Record<string, unknown>) => part.text)
+        .join("");
+    }
+  }
+  if (!text) {
+    text = "(응답을 생성하지 못했습니다. 다시 시도해주세요.)";
+  }
 
   // Update session
   session.messages = result.messages;

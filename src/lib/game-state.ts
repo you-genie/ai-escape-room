@@ -9,6 +9,7 @@ export interface GameState {
   escapeMethod: EscapeMethod | null;
   escapeDescription: string | null;
   actionCount: number;
+  hintCount: number;
 }
 
 export const initialGameState: GameState = {
@@ -20,6 +21,7 @@ export const initialGameState: GameState = {
   escapeMethod: null,
   escapeDescription: null,
   actionCount: 0,
+  hintCount: 0,
 };
 
 export interface EscapeResult {
@@ -48,6 +50,9 @@ export function calculateEscapeResult(state: GameState): EscapeResult {
   // Action efficiency (fewer actions = better)
   const efficiencyBonus = Math.max(0, 50 - state.actionCount * 2);
 
+  // Hint penalty (3 free, then -5 per extra hint)
+  const hintPenalty = Math.max(0, (state.hintCount - 3) * 5);
+
   // Escape method multiplier
   const methodMultipliers: Record<EscapeMethod, number> = {
     normal: 1.0,
@@ -57,7 +62,7 @@ export function calculateEscapeResult(state: GameState): EscapeResult {
     death: 0.1,
   };
 
-  const rawScore = puzzleScore + discoveryScore + inventoryBonus + efficiencyBonus;
+  const rawScore = puzzleScore + discoveryScore + inventoryBonus + efficiencyBonus - hintPenalty;
   const score = Math.round(rawScore * methodMultipliers[method]);
   const clampedScore = Math.min(100, Math.max(0, score));
 
@@ -150,6 +155,7 @@ export function gameStateToPrompt(state: GameState): string {
 - 발견한 것들: [${disc}]
 - 해결한 퍼즐: [${puzzles}]
 - 행동 횟수: ${state.actionCount}
+- 힌트 사용: ${state.hintCount}회
 - 탈출 여부: ${state.escaped ? "탈출 성공" : "아직 갇혀있음"}
 `;
 }
