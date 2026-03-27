@@ -20,6 +20,15 @@ export interface ScenarioRatings {
   horror: Rating;
 }
 
+export interface NPC {
+  name: string;
+  location: string;
+  personality: string;
+  speech: string;
+  memory: string;
+  fourthWall: boolean;
+}
+
 export interface Scenario {
   id: string;
   title: string;
@@ -32,6 +41,7 @@ export interface Scenario {
     backstory: string;
     time: string;
   };
+  npcs?: NPC[];
   objects: RoomObject[];
   puzzles: Puzzle[];
   escapeCondition: string;
@@ -81,6 +91,21 @@ export function scenarioToSystemPrompt(scenario: Scenario): string {
 
 ## 방 구조 (플레이어가 볼 수 있는 것들)
 ${objectList}
+${scenario.npcs?.length ? `
+## NPC (방에 있는 존재들)
+${scenario.npcs.map((npc) => `### ${npc.name}
+- 위치: ${npc.location}
+- 성격: ${npc.personality}
+- 말투: ${npc.speech}
+- 기억/상태: ${npc.memory}
+- 제4의 벽 넘기: ${npc.fourthWall ? "가능 — 가끔 플레이어에게 직접 말을 건다. '너 지금 이거 게임이라고 생각하지?', '화면 너머에서 보고 있는 거 다 알아' 같은 발언. 너무 자주 하면 안 되고, 갑자기 한 번씩." : "불가"}
+
+NPC 행동 규칙:
+- NPC는 자율적으로 행동한다. 플레이어가 말을 걸지 않아도 가끔 먼저 말하거나 반응한다.
+- NPC의 말은 큰따옴표로 감싸고, 이름을 앞에 붙여라. 예: **${npc.name}**: "..."
+- NPC에게 아이템을 주거나 도움을 요청할 수 있다.
+- NPC는 자신의 성격에 맞게 반응한다.`).join("\n\n")}
+` : ""}
 
 ## 퍼즐 (가이드라인 — 정해진 순서 아님)
 탈출 조건: ${scenario.escapeCondition}
