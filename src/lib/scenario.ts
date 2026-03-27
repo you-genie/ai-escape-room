@@ -12,10 +12,13 @@ export interface Puzzle {
   rewards?: string[];
 }
 
+export type Difficulty = 1 | 2 | 3 | 4 | 5;
+
 export interface Scenario {
   id: string;
   title: string;
   subtitle: string;
+  difficulty: Difficulty;
   titleDescription: string[];
   atmosphere: "horror" | "mystery" | "scifi" | "fantasy" | "comedy";
   setting: {

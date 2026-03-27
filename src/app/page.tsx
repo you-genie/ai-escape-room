@@ -509,6 +509,10 @@ function ScenarioSelect({
                     <span className="text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-600 uppercase">
                       {scenario.atmosphere}
                     </span>
+                    <span className="text-[10px] text-zinc-700">
+                      {"\u2605".repeat(scenario.difficulty)}
+                      {"\u2606".repeat(5 - scenario.difficulty)}
+                    </span>
                   </div>
                   <p className="text-xs text-zinc-600 group-hover:text-zinc-500 transition-colors">
                     {scenario.subtitle}

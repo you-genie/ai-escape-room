@@ -4,6 +4,7 @@ export const submarineScenario: Scenario = {
   id: "submarine",
   title: "침몰하는 잠수함",
   subtitle: "심해 3,000m, 산소가 줄어들고 있다",
+  difficulty: 4,
   titleDescription: [
     "해저 3,000미터.",
     "충돌 후 의식을 잃었다가 깨어났다.",

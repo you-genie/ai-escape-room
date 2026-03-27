@@ -4,6 +4,7 @@ export const hospitalScenario: Scenario = {
   id: "hospital",
   title: "폐병원 수술실",
   subtitle: "1987년, 아무도 들어오지 않았던 그 곳",
+  difficulty: 3,
   titleDescription: [
     "1987년 폐업한 병원.",
     "아무도 들어오지 않았던 수술실에서",
