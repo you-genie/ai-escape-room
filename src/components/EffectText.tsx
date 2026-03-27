@@ -163,6 +163,20 @@ export function EffectText({
             </span>
           );
         }
+        if (segment.type === "size") {
+          const sizeClass: Record<string, string> = {
+            xs: "text-[9px] opacity-50",
+            sm: "text-[11px] opacity-70",
+            lg: "text-lg font-medium",
+            xl: "text-xl font-bold",
+            "2xl": "text-2xl font-black tracking-wide",
+          };
+          return (
+            <span key={i} className={sizeClass[segment.size] ?? ""}>
+              <Markdown>{displayText}</Markdown>
+            </span>
+          );
+        }
         return (
           <span key={i}>
             <Markdown>{displayText}</Markdown>

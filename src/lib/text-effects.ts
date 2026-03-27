@@ -3,7 +3,8 @@ export type TextSegment =
   | { type: "pause"; duration: number }
   | { type: "slow"; content: string }
   | { type: "shake"; content: string }
-  | { type: "glitch"; content: string };
+  | { type: "glitch"; content: string }
+  | { type: "size"; content: string; size: "xs" | "sm" | "lg" | "xl" | "2xl" };
 
 /**
  * Parse AI response text with effect markers:
@@ -15,7 +16,7 @@ export type TextSegment =
 export function parseTextEffects(raw: string): TextSegment[] {
   const segments: TextSegment[] = [];
   const pattern =
-    /\[pause:(\d+(?:\.\d+)?)\]|\[slow\]([\s\S]*?)\[\/slow\]|\[shake\]([\s\S]*?)\[\/shake\]|\[glitch\]([\s\S]*?)\[\/glitch\]/g;
+    /\[pause:(\d+(?:\.\d+)?)\]|\[slow\]([\s\S]*?)\[\/slow\]|\[shake\]([\s\S]*?)\[\/shake\]|\[glitch\]([\s\S]*?)\[\/glitch\]|\[size:(xs|sm|lg|xl|2xl)\]([\s\S]*?)\[\/size\]/g;
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -33,6 +34,8 @@ export function parseTextEffects(raw: string): TextSegment[] {
       segments.push({ type: "shake", content: match[3] });
     } else if (match[4] !== undefined) {
       segments.push({ type: "glitch", content: match[4] });
+    } else if (match[5] !== undefined && match[6] !== undefined) {
+      segments.push({ type: "size", content: match[6], size: match[5] as "xs" | "sm" | "lg" | "xl" | "2xl" });
     }
 
     lastIndex = match.index + match[0].length;
